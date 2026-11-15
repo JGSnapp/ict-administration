@@ -9,11 +9,42 @@
 <body>
   <main>
     <p class="eyebrow">PICKER SERVICE</p>
-    <h1>Сборщик ожидает заказы</h1>
+    <h1>Обработка заказов</h1>
+
     <section>
-      <p><strong>Статус:</strong> сервис запущен.</p>
-      <p>Kafka пока не подключена, поэтому получать и обрабатывать заказы ещё неоткуда.</p>
+      <h2>Последний результат</h2>
+      <p id="output" role="status" aria-live="polite">
+        Сборщик ожидает заказ.
+      </p>
     </section>
   </main>
+
+  <script>
+    const output = document.getElementById('output');
+
+    async function updateStatus() {
+      try {
+        const response = await fetch('/api/status');
+        const data = await response.json();
+
+        if (data.status === 'waiting') {
+          output.textContent =
+            `${data.instance}: ожидает заказ из Kafka.`;
+          return;
+        }
+
+        output.textContent =
+          `${data.instance}: обработан ${data.order_id}; ` +
+          `partition ${data.partition}, offset ${data.offset}; ` +
+          `товары: ${data.items.join(', ')}.`;
+      } catch (error) {
+        output.textContent =
+          `Не удалось получить состояние: ${error.message}`;
+      }
+    }
+
+    updateStatus();
+    setInterval(updateStatus, 1000);
+  </script>
 </body>
 </html>

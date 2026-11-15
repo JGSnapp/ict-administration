@@ -1,0 +1,38 @@
+{
+  "uid": "kafka-overview",
+  "title": "Kafka Overview",
+  "schemaVersion": 42,
+  "refresh": "5s",
+  "panels": [
+    {
+      "id": 1,
+      "type": "timeseries",
+      "title": "Kafka brokers",
+      "gridPos": { "x": 0, "y": 0, "w": 8, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "refId": "A", "expr": "kafka_brokers", "range": true }
+      ]
+    },
+    {
+      "id": 2,
+      "type": "timeseries",
+      "title": "Pickers lag",
+      "gridPos": { "x": 8, "y": 0, "w": 8, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "refId": "A", "expr": "kafka_consumergroup_lag_sum{consumergroup=\"pickers\",topic=\"orders\"}", "range": true }
+      ]
+    },
+    {
+      "id": 3,
+      "type": "timeseries",
+      "title": "Under-replicated partitions",
+      "gridPos": { "x": 16, "y": 0, "w": 8, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "refId": "A", "expr": "sum(kafka_topic_partition_under_replicated_partition{topic=\"orders\"})", "range": true }
+      ]
+    }
+  ]
+}
