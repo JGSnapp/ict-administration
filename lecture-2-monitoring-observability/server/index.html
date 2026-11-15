@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Лаборатория мониторинга</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <main>
+    <p class="eyebrow">OBSERVABILITY LAB</p>
+    <h1>Три сценария для проверки сервиса</h1>
+    <p class="intro">Нажми кнопку, чтобы создать ошибку, задержку или нагрузку.</p>
+    <section class="cards" aria-label="Учебные сценарии">
+      <article>
+        <span class="badge">ERRORS</span><h2>Создать ошибку</h2>
+        <p>Сервис возвращает ответ HTTP 500.</p>
+        <button data-action="error">Создать ошибку</button>
+      </article>
+      <article>
+        <span class="badge">DURATION</span><h2>Создать задержку</h2>
+        <p>Сервис отвечает после ожидания в 2 секунды.</p>
+        <button data-action="slow">Создать задержку</button>
+      </article>
+      <article>
+        <span class="badge">RATE</span><h2>Нагрузка</h2>
+        <p>Сервис отправляет 100 HTTP-запросов к себе с параллельностью 10.</p>
+        <button data-action="load">Создать нагрузку</button>
+      </article>
+    </section>
+    <section class="result" aria-label="Результат запроса">
+      <h2>Последний результат</h2>
+      <p id="output" role="status" aria-live="polite">Выбери сценарий выше.</p>
+    </section>
+  </main>
+  <script>
+    const output = document.getElementById('output');
+    const buttons = document.querySelectorAll('button[data-action]');
+    buttons.forEach(button => button.addEventListener('click', async () => {
+      buttons.forEach(item => item.disabled = true);
+      output.textContent = 'Запрос выполняется…';
+      const start = performance.now();
+      try {
+        const response = await fetch(`/api/${button.dataset.action}`, {method: 'POST'});
+        const data = await response.json();
+        const seconds = ((performance.now() - start) / 1000).toFixed(2);
+        output.textContent = `${data.message} · HTTP ${response.status} · ${seconds} с`;
+      } catch (error) {
+        output.textContent = `Не удалось получить ответ сервиса: ${error.message}`;
+      } finally {
+        buttons.forEach(item => item.disabled = false);
+      }
+    }));
+  </script>
+</body>
+</html>

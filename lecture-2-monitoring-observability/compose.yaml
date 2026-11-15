@@ -1,0 +1,59 @@
+services:
+  server:
+    build: ./server
+    ports:
+      - "5000:5000"
+    environment:
+      OTEL_SERVICE_NAME: lab-service
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://jaeger:4318
+  prometheus:
+    image: prom/prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - "./metrics/prometheus.yml:/etc/prometheus/prometheus.yml:ro"
+      - "./metrics/alerts.yml:/etc/prometheus/alerts.yml:ro"
+      - "./metrics/alerts.yml:/etc/prometheus/alerts.yml:ro"
+  grafana:
+    image: grafana/grafana
+    ports:
+      - "3000:3000"
+    volumes:
+      - "./dashboards/datasources.yml:/etc/grafana/provisioning/datasources/datasources.yml:ro"
+      - "./dashboards/dashboards.yml:/etc/grafana/provisioning/dashboards/dashboards.yml:ro"
+      - "./dashboards:/etc/grafana/dashboards:ro"
+  loki:
+    image: grafana/loki:3.5.0
+    ports:
+      - "3100:3100"
+    command: -config.file=/etc/loki/loki-config.yml
+    volumes:
+      - "./logs/loki-config.yml:/etc/loki/loki-config.yml:ro"
+      - "loki-data:/loki"
+  promtail:
+    image: grafana/promtail:3.5.0
+    command: -config.file=/etc/promtail/promtail-config.yml
+    volumes:
+      - "./logs/promtail-config.yml:/etc/promtail/promtail-config.yml:ro"
+      - "/var/lib/docker/containers:/var/lib/docker/containers:ro"
+      - "promtail-positions:/tmp"
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    ports:
+      - "16686:16686"
+      - "4318:4318"
+  alertmanager:
+    image: prom/alertmanager
+    ports:
+      - "9093:9093"
+    command:
+      - "--config.file=/etc/alertmanager/alertmanager.yml"
+    volumes:
+      - "./metrics/alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro"
+  webhook:
+    build: ./webhook
+    ports:
+      - "8080:8080"
+volumes:
+  loki-data:
+  promtail-positions:

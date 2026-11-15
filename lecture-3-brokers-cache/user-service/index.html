@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Сервис пользователя</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <main>
+    <p class="eyebrow">USER SERVICE</p>
+    <h1>Создание заказа</h1>
+    <p>Пока заказ создаётся только внутри сервиса и не отправляется в Kafka.</p>
+    <button id="create-order">Создать заказ</button>
+    <section aria-label="Результат">
+      <h2>Последний результат</h2>
+      <p id="output" role="status" aria-live="polite">Заказ ещё не создавался.</p>
+    </section>
+  </main>
+  <script>
+    const button = document.getElementById('create-order');
+    const output = document.getElementById('output');
+
+    button.addEventListener('click', async () => {
+      button.disabled = true;
+      output.textContent = 'Создаём заказ…';
+      try {
+        const response = await fetch('/api/orders', {method: 'POST'});
+        const data = await response.json();
+        output.textContent = `${data.message} Номер: ${data.order_id}`;
+      } catch (error) {
+        output.textContent = `Не удалось создать заказ: ${error.message}`;
+      } finally {
+        button.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>
